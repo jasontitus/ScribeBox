@@ -1,0 +1,12 @@
+[Unit]
+Description=X Display Server for ScribeBox
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+User=scribebox
+ExecStart=/usr/bin/Xorg :0 -nolisten tcp vt1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

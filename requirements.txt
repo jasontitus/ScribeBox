@@ -1,0 +1,24 @@
+# ScribeBox - Python dependencies
+# All must work offline once installed
+
+# UI
+PyGObject>=3.42.0
+
+# Audio capture and processing
+sounddevice>=0.4.6
+numpy>=1.24.0
+scipy>=1.10.0
+
+# Summarization (extractive - no model needed)
+sumy>=0.11.0
+nltk>=3.8.0
+
+# Speaker diarization (lightweight)
+webrtcvad>=2.0.10
+librosa>=0.10.0
+
+# Whisper.cpp Python bindings
+whispercpp>=0.0.17
+
+# Utilities
+pyyaml>=6.0
