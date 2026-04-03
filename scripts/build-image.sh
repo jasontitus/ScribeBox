@@ -20,10 +20,11 @@ BUILD_DIR="$PROJECT_DIR/build"
 ROOTFS="$BUILD_DIR/rootfs"
 IMAGE="$BUILD_DIR/scribebox.img"
 
-# Image size: 8GB (models take ~3GB, system ~2GB, data partition ~3GB)
+# Image size: models ~3.4GB + system ~2GB + data partition ~2.5GB ≈ 8GB
+# Use a 16GB USB stick for comfortable headroom with transcript storage
 IMAGE_SIZE_MB=8192
-SYSTEM_SIZE_MB=5120
-DATA_SIZE_MB=3072
+SYSTEM_SIZE_MB=6144   # System + models (3.4GB models + 2GB OS + overhead)
+DATA_SIZE_MB=2048     # Persistent data partition for transcripts & preferences
 
 DEBIAN_RELEASE="bookworm"
 

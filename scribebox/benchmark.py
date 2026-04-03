@@ -128,6 +128,19 @@ def benchmark_model(model_id: str, models_dir: str | None = None,
             "-f", wav_path,
             "-t", str(threads),
             "--no-timestamps",
+            "-np",
+        ]
+
+        # Warmup run - loads the model into memory/cache
+        subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+
+        # Timed run - measures actual inference speed (model already loaded in OS cache)
+        cmd = [
+            binary,
+            "-m", model_path,
+            "-f", wav_path,
+            "-t", str(threads),
+            "--no-timestamps",
             "-nt",
         ]
 

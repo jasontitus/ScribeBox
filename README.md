@@ -19,11 +19,25 @@ Plug in, reboot, transcribe. No internet required.
 
 ## Target Hardware
 
-| RAM   | Recommended Model | Real-time? |
-|-------|-------------------|------------|
-| 2 GB  | tiny.en           | Yes        |
-| 4 GB  | base.en / small.en (quantized) | Yes / Near real-time |
-| 8 GB+ | small.en / medium.en | Yes        |
+| RAM   | Recommended Model | Real-time? | Quality |
+|-------|-------------------|------------|---------|
+| 2 GB  | tiny.en (75 MB)   | Yes        | Basic   |
+| 4 GB  | base.en (142 MB)  | Yes        | Good    |
+| 4 GB  | small.en-q5 (190 MB) | Borderline | Better |
+| 8 GB  | small.en (466 MB) | Yes        | Great   |
+| 8 GB+ | large-v3-turbo-q5 (548 MB) | Depends on CPU | Best |
+| 16 GB | large-v3-turbo (1.6 GB) | Modern CPUs | Best |
+
+**Included models (3.4 GB total):** tiny.en, base.en, small.en-q5, small.en,
+medium.en-q5, large-v3-turbo-q5, large-v3-turbo. All English-optimized.
+The built-in benchmark tool tests your hardware and recommends the best model.
+
+### Minimum Hardware
+
+- **CPU**: x86-64 with AVX (2011+). AVX2 (2013+) strongly recommended.
+- **RAM**: 2 GB minimum (tiny.en). 4 GB recommended (base.en or small.en).
+- **USB**: 16 GB stick (8 GB image).
+- **Mac compatibility**: 2013 MacBook Pro or newer. 2011-2012 usable with tiny.en.
 
 ## Quick Start
 

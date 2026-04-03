@@ -11,20 +11,23 @@ mkdir -p "$MODELS_DIR"
 
 BASE_URL="https://huggingface.co/ggerganov/whisper.cpp/resolve/main"
 
-# Models to download - from tiny (old laptops) to large-v3-turbo (newer machines)
+# Practical model set (~3.6GB total):
+# - English-only models (most users transcribing in English)
+# - Quantized variants where they save significant RAM
+# - large-v3-turbo instead of full large-v3 (faster AND smaller)
+# - Multilingual users: uncomment the multilingual models below
 MODELS=(
-    "ggml-tiny.en.bin"
-    "ggml-tiny.bin"
-    "ggml-base.en.bin"
-    "ggml-base.bin"
-    "ggml-small.en.bin"
-    "ggml-small.bin"
-    "ggml-small.en-q5_1.bin"
-    "ggml-medium.en.bin"
-    "ggml-medium.en-q5_0.bin"
-    "ggml-large-v3.bin"
-    "ggml-large-v3-turbo.bin"
-    "ggml-large-v3-turbo-q5_0.bin"
+    "ggml-tiny.en.bin"          #   75 MB - 2GB RAM machines
+    "ggml-base.en.bin"          #  142 MB - 4GB RAM machines
+    "ggml-small.en-q5_1.bin"    #  190 MB - 4GB RAM, better quality
+    "ggml-small.en.bin"         #  466 MB - 4-8GB RAM
+    "ggml-medium.en-q5_0.bin"   #  540 MB - 8GB RAM
+    "ggml-large-v3-turbo-q5_0.bin"  #  600 MB - 8GB+ RAM
+    "ggml-large-v3-turbo.bin"   #  1.6 GB - 8GB+ RAM, best quality
+    # Uncomment for multilingual support (adds ~750 MB):
+    # "ggml-tiny.bin"
+    # "ggml-base.bin"
+    # "ggml-small.bin"
 )
 
 echo "========================================"

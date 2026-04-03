@@ -1,0 +1,74 @@
+{
+  "system_info": {
+    "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+    "cores": 4,
+    "ram_mb": 16080,
+    "cpu_flags": []
+  },
+  "results": [
+    {
+      "model_id": "base.en",
+      "inference_time": 1.02,
+      "audio_duration": 5.0,
+      "real_time_factor": 0.2,
+      "can_realtime": true,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "large-v3-turbo",
+      "inference_time": 13.33,
+      "audio_duration": 5.0,
+      "real_time_factor": 2.67,
+      "can_realtime": false,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "large-v3-turbo-q5_0",
+      "inference_time": 19.57,
+      "audio_duration": 5.0,
+      "real_time_factor": 3.91,
+      "can_realtime": false,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "medium.en-q5_0",
+      "inference_time": 13.5,
+      "audio_duration": 5.0,
+      "real_time_factor": 2.7,
+      "can_realtime": false,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "small.en",
+      "inference_time": 3.36,
+      "audio_duration": 5.0,
+      "real_time_factor": 0.67,
+      "can_realtime": true,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "small.en-q5_1",
+      "inference_time": 5.02,
+      "audio_duration": 5.0,
+      "real_time_factor": 1.0,
+      "can_realtime": false,
+      "threads": 4,
+      "error": null
+    },
+    {
+      "model_id": "tiny.en",
+      "inference_time": 0.61,
+      "audio_duration": 5.0,
+      "real_time_factor": 0.12,
+      "can_realtime": true,
+      "threads": 4,
+      "error": null
+    }
+  ],
+  "recommended_model": "small.en"
+}
