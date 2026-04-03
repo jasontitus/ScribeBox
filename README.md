@@ -43,16 +43,49 @@ The built-in benchmark tool tests your hardware and recommends the best model.
 
 ### Building the USB Image
 
+Works on **Mac, Linux, and Windows** (via Docker):
+
 ```bash
-# 1. Download whisper.cpp models (requires internet, one-time)
-./scripts/download-models.sh
-
-# 2. Build the bootable USB image
-sudo ./scripts/build-image.sh
-
-# 3. Write to USB drive (replace /dev/sdX)
-sudo dd if=build/scribebox.img of=/dev/sdX bs=4M status=progress
+# One command does everything:
+./build.sh
 ```
+
+That's it. The script will:
+1. Detect your platform (Docker, native Linux, etc.)
+2. Download the 7 Whisper models (~3.4 GB, one-time)
+3. Compile whisper.cpp with portable CPU optimizations
+4. Build an 8 GB bootable USB image
+
+Output: `build/scribebox.img`
+
+**Requirements:** Just [Docker](https://docker.com/products/docker-desktop).
+On Linux you can also run `sudo ./build.sh` without Docker.
+
+### Flashing to USB
+
+```bash
+# Linux
+sudo dd if=build/scribebox.img of=/dev/sdX bs=4M status=progress
+
+# Mac
+diskutil list                    # Find your USB (e.g. disk2)
+diskutil unmountDisk /dev/diskN
+sudo dd if=build/scribebox.img of=/dev/rdiskN bs=4m
+diskutil eject /dev/diskN
+
+# Windows / Any platform
+# Use Balena Etcher (free): https://etcher.balena.io
+```
+
+### Testing in a VM (no USB needed)
+
+```bash
+# Test with QEMU or UTM (Mac)
+./scripts/create-test-vm.sh
+```
+
+On Mac, this creates a UTM VM bundle you can double-click to boot.
+On Linux, it launches QEMU directly.
 
 ### Development (run without building an image)
 
@@ -71,32 +104,36 @@ python -m scribebox
 
 ```
 ScribeBox/
+├── build.sh                # One-command build (auto-detects platform)
 ├── scribebox/              # Main Python application
 │   ├── __main__.py         # Entry point
-│   ├── app.py              # Main application window
+│   ├── app.py              # Main application controller
 │   ├── transcriber.py      # whisper.cpp integration
-│   ├── audio.py            # Audio capture (ALSA)
+│   ├── audio.py            # Audio capture (ALSA/sounddevice)
 │   ├── summarizer.py       # Extractive summarization (TextRank)
-│   ├── diarizer.py         # Speaker diarization (VAD + clustering)
+│   ├── diarizer.py         # Speaker diarization (MFCC + clustering)
 │   ├── benchmark.py        # Hardware benchmark tool
 │   ├── preferences.py      # Settings management
-│   └── ui/                 # UI components
-│       ├── main_window.py  # GTK main window
+│   └── ui/                 # UI components (GTK3)
+│       ├── main_window.py  # Main window with header, transcript, summary
 │       ├── transcript_view.py  # Scrolling transcript display
 │       ├── summary_panel.py    # Rolling summary panel
 │       ├── preferences_dialog.py # Settings dialog
-│       └── theme.py        # Theming support
+│       └── theme.py        # Dark/light/high-contrast themes
+├── docker/                 # Docker build environment
+│   └── Dockerfile.build    # Debian-based builder image
 ├── configs/                # System configuration for bootable image
 │   ├── systemd/            # Auto-start services
 │   ├── xorg/               # Display configuration
 │   └── skel/               # Default user skeleton
 ├── scripts/                # Build and utility scripts
 │   ├── build-image.sh      # Build bootable USB image
-│   ├── build-whisper-cpp.sh # Compile whisper.cpp
-│   └── download-models.sh  # Download Whisper models
-├── models/                 # Pre-loaded Whisper models (GGML format)
-├── benchmark/              # Benchmark audio samples
-├── assets/                 # Icons, splash screen
+│   ├── build-whisper-cpp.sh  # Compile whisper.cpp
+│   ├── build-image-docker.sh # Docker-based image builder
+│   ├── download-models.sh    # Download Whisper models
+│   └── create-test-vm.sh     # Create UTM/QEMU test VM
+├── tests/                  # Test suite (70 tests)
+├── models/                 # Pre-loaded Whisper models (3.4 GB, 7 models)
 └── requirements.txt        # Python dependencies
 ```
 
