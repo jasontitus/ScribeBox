@@ -1,164 +1,187 @@
 # ScribeBox
 
-**A USB-bootable Linux OS that turns any laptop into a dedicated transcription device.**
+**A USB stick that turns any old laptop into a live transcription device.**
 
-Plug in, reboot, transcribe. No internet required.
+Plug it in. Reboot. Start transcribing. No internet, no setup, no accounts.
 
-## Features
+ScribeBox is a complete bootable operating system on a USB drive. It includes
+everything needed to capture speech from a microphone and display it as text
+in real time — with a rolling summary of what's been said and automatic
+speaker detection.
 
-- **Instant boot** into a clean transcription interface
-- **Real-time transcription** powered by whisper.cpp (CPU-optimized)
-- **Rolling 2-minute summaries** using extractive summarization (TextRank)
-- **Speaker diarization** with lightweight voice activity detection
-- **Configurable UI** - font size, themes, layout options
-- **Hardware auto-detection** - automatically selects the best Whisper model
-- **Built-in benchmark** - test which models your hardware can handle in real-time
-- **All models included on USB** - tiny, base, small, medium (+ quantized variants)
-- **Preferences saved locally** on the USB drive
-- **Works on 2010-2015 era laptops** with as little as 2GB RAM
+---
 
-## Target Hardware
+## What Does It Do?
 
-| RAM   | Recommended Model | Real-time? | Quality |
-|-------|-------------------|------------|---------|
-| 2 GB  | tiny.en (75 MB)   | Yes        | Basic   |
-| 4 GB  | base.en (142 MB)  | Yes        | Good    |
-| 4 GB  | small.en-q5 (190 MB) | Borderline | Better |
-| 8 GB  | small.en (466 MB) | Yes        | Great   |
-| 8 GB+ | large-v3-turbo-q5 (548 MB) | Depends on CPU | Best |
-| 16 GB | large-v3-turbo (1.6 GB) | Modern CPUs | Best |
+When you boot a computer from the ScribeBox USB stick:
 
-**Included models (3.4 GB total):** tiny.en, base.en, small.en-q5, small.en,
-medium.en-q5, large-v3-turbo-q5, large-v3-turbo. All English-optimized.
-The built-in benchmark tool tests your hardware and recommends the best model.
+1. The screen shows a large, easy-to-read transcription area
+2. Press **F5** (or click "Start Recording") and speak into the microphone
+3. Your words appear on screen as you speak
+4. A summary of the last 2 minutes appears at the bottom
+5. Different speakers are labeled automatically
+6. Everything is saved to the USB stick
 
-### Minimum Hardware
+No internet connection needed. No cloud. No accounts. Everything runs locally
+on the computer's own CPU.
 
-- **CPU**: x86-64 with AVX (2011+). AVX2 (2013+) strongly recommended.
-- **RAM**: 2 GB minimum (tiny.en). 4 GB recommended (base.en or small.en).
-- **USB**: 16 GB stick (8 GB image).
-- **Mac compatibility**: 2013 MacBook Pro or newer. 2011-2012 usable with tiny.en.
+## Who Is This For?
+
+- **Meeting notes** — plug into a conference room laptop and transcribe the discussion
+- **Lectures** — turn an old laptop into a captioning device for a classroom
+- **Accessibility** — real-time captions for anyone who needs them
+- **Interviews** — automatic transcription with speaker labels
+- **Repurposing old hardware** — give a 2012 laptop a useful second life
+
+## Will It Work on My Computer?
+
+ScribeBox works on most **Intel/AMD laptops from 2011 or newer**:
+
+| Your Computer | Works? | Transcription Quality |
+|---------------|--------|----------------------|
+| Laptop from 2015+ with 4-8 GB RAM | Great | High quality, real-time |
+| Laptop from 2013-2014 with 4 GB RAM | Good | Good quality, real-time |
+| Laptop from 2011-2012 with 2 GB RAM | OK | Basic quality, slight delay |
+| Laptop before 2010 | Probably not | Too slow for live use |
+| MacBook Pro 2013 or newer | Great | See above by RAM |
+| MacBook Pro 2011-2012 | OK | Basic quality |
+| MacBook with Apple Silicon (M1/M2/M3) | No | ARM — needs different build |
+| Desktop PC (any era with 4+ GB RAM) | Great | Depends on CPU age |
+| Chromebook | Maybe | Only if it can boot from USB |
+| Tablet / iPad | No | Cannot boot from USB |
+
+**What you need:**
+- A computer that can boot from USB (almost all laptops can)
+- A **16 GB or larger USB stick** (USB 3.0 recommended for speed)
+- A working microphone (built-in laptop mic is fine)
 
 ## Quick Start
 
-### Building the USB Image
+**There are three steps: build the USB, flash it, boot it.**
 
-Works on **Mac, Linux, and Windows** (via Docker):
+### Step 1: Build the Image
+
+You need another computer (Mac, Linux, or Windows) to create the USB image.
+This is a one-time process.
+
+See **[BUILD.md](BUILD.md)** for detailed step-by-step instructions for your
+platform. The short version:
 
 ```bash
-# One command does everything:
+git clone https://github.com/jasontitus/ScribeBox.git
+cd ScribeBox
 ./build.sh
 ```
 
-That's it. The script will:
-1. Detect your platform (Docker, native Linux, etc.)
-2. Download the 7 Whisper models (~3.4 GB, one-time)
-3. Compile whisper.cpp with portable CPU optimizations
-4. Build an 8 GB bootable USB image
+This downloads the AI models (~3.4 GB), compiles the transcription engine,
+and creates a bootable disk image. Takes 10-30 minutes depending on your
+internet speed and computer.
 
-Output: `build/scribebox.img`
+### Step 2: Flash to USB
 
-**Requirements:** Just [Docker](https://docker.com/products/docker-desktop).
-On Linux you can also run `sudo ./build.sh` without Docker.
+The build produces a file called `build/scribebox.img`. You need to write
+this to a USB stick. **This will erase everything on the USB stick.**
 
-### Flashing to USB
+**Easiest method (any platform):**
+Download [Balena Etcher](https://etcher.balena.io) (free), select the
+`scribebox.img` file, select your USB stick, click Flash.
 
-```bash
-# Linux
-sudo dd if=build/scribebox.img of=/dev/sdX bs=4M status=progress
+**Command line methods:** see [BUILD.md](BUILD.md).
 
-# Mac
-diskutil list                    # Find your USB (e.g. disk2)
-diskutil unmountDisk /dev/diskN
-sudo dd if=build/scribebox.img of=/dev/rdiskN bs=4m
-diskutil eject /dev/diskN
+### Step 3: Boot and Use
 
-# Windows / Any platform
-# Use Balena Etcher (free): https://etcher.balena.io
-```
+1. Plug the USB stick into the target computer
+2. Reboot the computer
+3. Enter the boot menu (usually **F12**, **F2**, **Esc**, or **Del** during startup — varies by manufacturer)
+4. Select the USB stick from the boot menu
+5. ScribeBox loads automatically
 
-### Testing in a VM (no USB needed)
+See **[USAGE.md](USAGE.md)** for the full user guide.
 
-```bash
-# Test with QEMU or UTM (Mac)
-./scripts/create-test-vm.sh
-```
+## What's Included on the USB
 
-On Mac, this creates a UTM VM bundle you can double-click to boot.
-On Linux, it launches QEMU directly.
+| Component | What It Does |
+|-----------|-------------|
+| 7 Whisper AI models (3.4 GB) | Speech-to-text, ranging from fast/basic to slower/best quality |
+| whisper.cpp engine | Runs the AI models efficiently on your CPU, no GPU needed |
+| ScribeBox application | The transcription UI, summarizer, and settings |
+| Minimal Linux OS | Just enough operating system to boot and run ScribeBox |
+| Benchmark tool | Tests your hardware to pick the best model |
 
-### Development (run without building an image)
+### The AI Models
 
-```bash
-# Install dependencies
-pip install -r requirements.txt
+ScribeBox ships with 7 models. The benchmark tool tests your hardware and
+picks the best one automatically, or you can choose manually in Preferences.
 
-# Build whisper.cpp
-./scripts/build-whisper-cpp.sh
+| Model | Size | RAM Needed | Speed vs Quality |
+|-------|------|-----------|------------------|
+| tiny.en | 75 MB | 1 GB | Fastest, basic quality. Good for old/slow machines. |
+| base.en | 142 MB | 1.5 GB | Fast, good quality. Sweet spot for most old laptops. |
+| small.en (quantized) | 182 MB | 1.5 GB | Moderate speed, better quality. Compressed to save RAM. |
+| small.en | 466 MB | 2.5 GB | Good speed, great quality. Best for 4-8 GB machines. |
+| medium.en (quantized) | 515 MB | 3 GB | Slower, very good quality. Needs 8+ GB RAM. |
+| large-v3-turbo (quantized) | 548 MB | 4 GB | Slow, excellent quality. Needs modern CPU + 8 GB. |
+| large-v3-turbo | 1.6 GB | 6 GB | Slowest, best possible quality. Needs fast modern CPU. |
 
-# Run the application
-python -m scribebox
-```
+"Quantized" means the model has been compressed to use less memory, with
+minimal quality loss. The "(en)" models are English-only and perform better
+for English than the multilingual versions.
 
-## Architecture
+## Customizing ScribeBox
+
+All settings are accessible from the **Preferences** button (or press **F2**):
+
+- **Theme**: Dark (default), Light, or High Contrast
+- **Font size**: 14pt to 48pt — make it readable from across the room
+- **Layout**: Full transcript, or split view with summary below
+- **AI Model**: Auto (recommended), or manually select
+- **Speaker detection**: On/off
+- **Language**: English (default) or auto-detect
+- **Auto-save**: How often to save transcripts (default: every 60 seconds)
+
+Settings are saved on the USB stick and persist between reboots.
+
+## For Developers
+
+Want to modify ScribeBox or understand how it works?
+
+- **[BUILD.md](BUILD.md)** — How to build the USB image (detailed, all platforms)
+- **[USAGE.md](USAGE.md)** — User guide for the transcription appliance
+- **[HACKING.md](HACKING.md)** — Developer guide: architecture, how to modify components, add features
+
+### Project Structure
 
 ```
 ScribeBox/
-├── build.sh                # One-command build (auto-detects platform)
-├── scribebox/              # Main Python application
-│   ├── __main__.py         # Entry point
-│   ├── app.py              # Main application controller
-│   ├── transcriber.py      # whisper.cpp integration
-│   ├── audio.py            # Audio capture (ALSA/sounddevice)
-│   ├── summarizer.py       # Extractive summarization (TextRank)
-│   ├── diarizer.py         # Speaker diarization (MFCC + clustering)
-│   ├── benchmark.py        # Hardware benchmark tool
-│   ├── preferences.py      # Settings management
-│   └── ui/                 # UI components (GTK3)
-│       ├── main_window.py  # Main window with header, transcript, summary
-│       ├── transcript_view.py  # Scrolling transcript display
-│       ├── summary_panel.py    # Rolling summary panel
-│       ├── preferences_dialog.py # Settings dialog
-│       └── theme.py        # Dark/light/high-contrast themes
-├── docker/                 # Docker build environment
-│   └── Dockerfile.build    # Debian-based builder image
-├── configs/                # System configuration for bootable image
-│   ├── systemd/            # Auto-start services
-│   ├── xorg/               # Display configuration
-│   └── skel/               # Default user skeleton
-├── scripts/                # Build and utility scripts
-│   ├── build-image.sh      # Build bootable USB image
-│   ├── build-whisper-cpp.sh  # Compile whisper.cpp
-│   ├── build-image-docker.sh # Docker-based image builder
-│   ├── download-models.sh    # Download Whisper models
-│   └── create-test-vm.sh     # Create UTM/QEMU test VM
-├── tests/                  # Test suite (70 tests)
-├── models/                 # Pre-loaded Whisper models (3.4 GB, 7 models)
-└── requirements.txt        # Python dependencies
+├── build.sh                    # One-command build (start here)
+├── scribebox/                  # Python application
+│   ├── app.py                  # Main controller
+│   ├── transcriber.py          # whisper.cpp integration
+│   ├── audio.py                # Microphone capture
+│   ├── summarizer.py           # TextRank summarization
+│   ├── diarizer.py             # Speaker identification (MFCC)
+│   ├── benchmark.py            # Hardware speed testing
+│   ├── preferences.py          # Settings management
+│   └── ui/                     # GTK3 interface
+├── scripts/                    # Build scripts
+├── configs/                    # Linux boot configuration
+├── docker/                     # Docker build environment
+├── tests/                      # 70 automated tests
+└── models/                     # AI model files (3.4 GB)
 ```
 
-## How It Works
+### Running Tests
 
-1. **Boot**: Minimal Debian-based Linux boots from USB, auto-logs in, starts ScribeBox
-2. **Audio**: Captures microphone input via ALSA at 16kHz mono
-3. **Transcription**: Streams audio chunks to whisper.cpp for real-time transcription
-4. **Display**: Shows transcription in a large, readable font with auto-scroll
-5. **Summary**: Every 2 minutes, runs TextRank extractive summarization on recent text
-6. **Diarization**: Uses Silero VAD + spectral clustering to identify speaker changes
-7. **Save**: Transcripts auto-save to the USB drive's data partition
+```bash
+# Create a Python 3.12 virtual environment
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install numpy scipy PyYAML pytest sounddevice PyGObject
 
-## Preferences
-
-Saved to `/data/scribebox/preferences.json` on the USB drive:
-
-- **Whisper model**: tiny.en, base.en, small.en, medium.en (+ quantized)
-- **Theme**: Dark / Light / High Contrast
-- **Font size**: 14-48pt
-- **Layout**: Full transcript / Split (transcript + summary) / Three-panel
-- **Diarization**: On / Off
-- **Auto-save interval**: 30s / 1m / 5m
-- **Language**: English (default), or auto-detect
+# Run all 70 tests
+pytest tests/ -v
+```
 
 ## License
 
-MIT
+MIT — free to use, modify, and distribute.
