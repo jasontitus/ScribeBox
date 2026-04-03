@@ -216,7 +216,11 @@ def auto_select_model(models_dir: str | None = None) -> str:
     ram = sys_info["ram_mb"]
     available = set(list_available_models(models_dir))
 
-    # Simple heuristic based on RAM
+    # Simple heuristic based on RAM - prefer best quality model that fits
+    if ram >= 8192 and "large-v3-turbo" in available:
+        return "large-v3-turbo"
+    if ram >= 6144 and "large-v3-turbo-q5_0" in available:
+        return "large-v3-turbo-q5_0"
     if ram >= 4096 and "small.en" in available:
         return "small.en"
     if ram >= 4096 and "small.en-q5" in available:

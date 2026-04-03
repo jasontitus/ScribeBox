@@ -11,7 +11,7 @@ mkdir -p "$MODELS_DIR"
 
 BASE_URL="https://huggingface.co/ggerganov/whisper.cpp/resolve/main"
 
-# Models to download - these cover the useful range for 2010-2015 hardware
+# Models to download - from tiny (old laptops) to large-v3-turbo (newer machines)
 MODELS=(
     "ggml-tiny.en.bin"
     "ggml-tiny.bin"
@@ -22,6 +22,9 @@ MODELS=(
     "ggml-small.en-q5_1.bin"
     "ggml-medium.en.bin"
     "ggml-medium.en-q5_0.bin"
+    "ggml-large-v3.bin"
+    "ggml-large-v3-turbo.bin"
+    "ggml-large-v3-turbo-q5_0.bin"
 )
 
 echo "========================================"

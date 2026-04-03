@@ -35,6 +35,9 @@ AVAILABLE_MODELS = [
     {"id": "medium.en",  "name": "Medium (English)",    "size_mb": 1500,"ram_mb": 2600},
     {"id": "medium",     "name": "Medium (Multilingual)","size_mb":1500,"ram_mb": 2600},
     {"id": "medium.en-q5","name":"Medium (English, Q5)", "size_mb": 540,"ram_mb": 1400},
+    {"id": "large-v3",   "name": "Large v3",              "size_mb": 3100,"ram_mb": 4700},
+    {"id": "large-v3-turbo", "name": "Large v3 Turbo (Best)", "size_mb": 1600, "ram_mb": 3000},
+    {"id": "large-v3-turbo-q5_0", "name": "Large v3 Turbo (Q5)", "size_mb": 600, "ram_mb": 1800},
 ]
 
 

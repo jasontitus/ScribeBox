@@ -22,7 +22,7 @@ def _word_frequencies(text: str) -> Counter:
         "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
         "have", "has", "had", "do", "does", "did", "will", "would", "could",
         "should", "may", "might", "shall", "can", "need", "dare", "ought",
-        "used", "to", "of", "in", "for", "on", "with", "at", "by", "from",
+        "used", "to", "of", "in", "for", "on", "with", "at", "by", "from", "about",
         "as", "into", "through", "during", "before", "after", "above", "below",
         "between", "out", "off", "over", "under", "again", "further", "then",
         "once", "here", "there", "when", "where", "why", "how", "all", "both",

@@ -34,7 +34,7 @@ class TestFeatureExtraction:
     def test_returns_correct_shape(self):
         audio = np.random.randn(16000).astype(np.float32) * 0.3
         features = _extract_features(audio)
-        assert features.shape == (6,)
+        assert features.shape == (13,)  # 13 MFCCs
 
     def test_short_audio_returns_zeros(self):
         audio = np.array([0.1, 0.2], dtype=np.float32)
@@ -42,13 +42,14 @@ class TestFeatureExtraction:
         assert np.all(features == 0)
 
     def test_different_signals_different_features(self):
+        from scipy.spatial.distance import euclidean
         t = np.linspace(0, 1, 16000, dtype=np.float32)
         low_tone = 0.5 * np.sin(2 * np.pi * 100 * t)
         high_tone = 0.5 * np.sin(2 * np.pi * 3000 * t)
         feat_low = _extract_features(low_tone)
         feat_high = _extract_features(high_tone)
-        # Spectral centroid should differ significantly
-        assert abs(feat_low[0] - feat_high[0]) > 500
+        # MFCC features should differ significantly for different signals
+        assert euclidean(feat_low, feat_high) > 10
 
 
 class TestSpeakerDiarizer:

@@ -1,11 +1,11 @@
-"""Lightweight speaker diarization using VAD and spectral clustering.
+"""Lightweight speaker diarization using VAD and MFCC-based clustering.
 
 Designed for 2-speaker scenarios on old hardware.
-Uses WebRTC VAD for speech detection and simple acoustic features for clustering.
+Uses energy-based VAD for speech detection and MFCC features for speaker identification.
 """
 
 import numpy as np
-from scipy.spatial.distance import cosine
+from scipy.spatial.distance import euclidean
 
 
 class SimpleVAD:
@@ -32,56 +32,76 @@ class SimpleVAD:
 
 
 def _extract_features(audio: np.ndarray, sample_rate: int = 16000) -> np.ndarray:
-    """Extract simple acoustic features for speaker identification.
+    """Extract acoustic features for speaker identification.
 
-    Returns a feature vector: [spectral_centroid, spectral_bandwidth, zcr, energy,
-                               low_energy_ratio, spectral_rolloff]
+    Uses MFCCs (Mel-Frequency Cepstral Coefficients) computed from scratch.
+    Returns a 13-dimensional feature vector (mean MFCCs across frames).
+    MFCCs capture the spectral envelope of speech and are the standard
+    feature for speaker identification.
     """
     if len(audio) < 512:
-        return np.zeros(6)
+        return np.zeros(13)
 
-    # Spectral features via FFT
-    fft = np.abs(np.fft.rfft(audio))
-    freqs = np.fft.rfftfreq(len(audio), 1.0 / sample_rate)
+    # Parameters
+    n_fft = 512
+    hop = 160  # 10ms at 16kHz
+    n_mels = 26
+    n_mfcc = 13
 
-    # Spectral centroid
-    if np.sum(fft) > 0:
-        centroid = np.sum(freqs * fft) / np.sum(fft)
-    else:
-        centroid = 0.0
+    # Pre-emphasis
+    emphasized = np.append(audio[0], audio[1:] - 0.97 * audio[:-1])
 
-    # Spectral bandwidth
-    if np.sum(fft) > 0:
-        bandwidth = np.sqrt(np.sum(((freqs - centroid) ** 2) * fft) / np.sum(fft))
-    else:
-        bandwidth = 0.0
+    # Frame the signal
+    n_frames = 1 + (len(emphasized) - n_fft) // hop
+    if n_frames < 1:
+        return np.zeros(n_mfcc)
 
-    # Zero crossing rate
-    zcr = np.sum(np.abs(np.diff(np.sign(audio)))) / (2 * len(audio))
+    frames = np.zeros((n_frames, n_fft), dtype=np.float32)
+    for i in range(n_frames):
+        start = i * hop
+        frames[i] = emphasized[start:start + n_fft]
 
-    # RMS energy
-    energy = np.sqrt(np.mean(audio ** 2))
+    # Apply Hamming window
+    window = np.hamming(n_fft).astype(np.float32)
+    frames *= window
 
-    # Low energy ratio (fraction of frames with below-average energy)
-    frame_size = 512
-    energies = []
-    for i in range(0, len(audio) - frame_size, frame_size):
-        energies.append(np.sqrt(np.mean(audio[i:i+frame_size] ** 2)))
-    if energies:
-        mean_e = np.mean(energies)
-        low_ratio = np.sum(np.array(energies) < mean_e) / len(energies)
-    else:
-        low_ratio = 0.5
+    # Power spectrum
+    power = np.abs(np.fft.rfft(frames, n=n_fft)) ** 2
 
-    # Spectral rolloff (frequency below which 85% of energy is concentrated)
-    cumsum = np.cumsum(fft)
-    if cumsum[-1] > 0:
-        rolloff_idx = np.searchsorted(cumsum, 0.85 * cumsum[-1])
-        rolloff = freqs[min(rolloff_idx, len(freqs) - 1)]
-    else:
-        rolloff = 0.0
+    # Mel filterbank
+    low_freq_mel = 0
+    high_freq_mel = 2595 * np.log10(1 + (sample_rate / 2) / 700)
+    mel_points = np.linspace(low_freq_mel, high_freq_mel, n_mels + 2)
+    hz_points = 700 * (10 ** (mel_points / 2595) - 1)
+    bin_points = np.floor((n_fft + 1) * hz_points / sample_rate).astype(int)
 
-    return np.array([centroid, bandwidth, zcr, energy, low_ratio, rolloff])
+    filterbank = np.zeros((n_mels, n_fft // 2 + 1))
+    for m in range(n_mels):
+        f_left = bin_points[m]
+        f_center = bin_points[m + 1]
+        f_right = bin_points[m + 2]
+        for k in range(f_left, f_center):
+            if f_center > f_left:
+                filterbank[m, k] = (k - f_left) / (f_center - f_left)
+        for k in range(f_center, f_right):
+            if f_right > f_center:
+                filterbank[m, k] = (f_right - k) / (f_right - f_center)
+
+    # Apply filterbank and take log
+    mel_spec = np.dot(power, filterbank.T)
+    mel_spec = np.maximum(mel_spec, 1e-10)
+    log_mel = np.log(mel_spec)
+
+    # DCT to get MFCCs
+    mfccs = np.zeros((n_frames, n_mfcc))
+    for i in range(n_mfcc):
+        mfccs[:, i] = np.sum(
+            log_mel * np.cos(np.pi * i * (np.arange(n_mels) + 0.5) / n_mels),
+            axis=1,
+        )
+
+    # Return mean MFCCs across all frames (speaker "fingerprint")
+    return np.mean(mfccs, axis=0)
 
 
 class SpeakerDiarizer:
@@ -92,7 +112,7 @@ class SpeakerDiarizer:
         self._max_speakers = max_speakers
         self._vad = SimpleVAD(sample_rate=sample_rate)
         self._speaker_profiles: list[np.ndarray] = []
-        self._similarity_threshold = 0.3
+        self._distance_threshold = 15.0  # Euclidean distance on MFCCs
 
     def identify_speaker(self, audio: np.ndarray) -> int | None:
         """Identify speaker from an audio segment.
@@ -111,16 +131,16 @@ class SpeakerDiarizer:
             self._speaker_profiles.append(features)
             return 0
 
-        # Find closest speaker
+        # Find closest speaker using Euclidean distance on MFCCs
         min_dist = float("inf")
         closest = 0
         for i, profile in enumerate(self._speaker_profiles):
-            dist = cosine(features, profile)
+            dist = euclidean(features, profile)
             if dist < min_dist:
                 min_dist = dist
                 closest = i
 
-        if min_dist < self._similarity_threshold:
+        if min_dist < self._distance_threshold:
             # Update profile with exponential moving average
             alpha = 0.1
             self._speaker_profiles[closest] = (

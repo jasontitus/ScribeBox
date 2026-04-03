@@ -152,7 +152,7 @@ class Transcriber:
                 "-t", str(self._threads),
                 "-l", self._language,
                 "--no-timestamps",
-                "-nt",  # no prints
+                "-np",  # no prints (only output transcription)
             ]
             result = subprocess.run(
                 cmd,
